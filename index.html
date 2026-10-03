@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>archMonty</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg id="wall" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 900"></svg>
+<div id="desktop"></div>
+
+<div id="win" class="win closed">
+  <i class="rz" data-d="n"></i><i class="rz" data-d="s"></i><i class="rz" data-d="e"></i><i class="rz" data-d="w"></i>
+  <i class="rz" data-d="nw"></i><i class="rz" data-d="ne"></i><i class="rz" data-d="sw"></i><i class="rz" data-d="se"></i>
+  <div id="title" class="titlebar">
+    <span class="tl" data-icon="terminal"></span>
+    <span>~ : bash — Konsole</span>
+    <div class="dots">
+      <button class="dot" id="b-min" title="Minimize"></button>
+      <button class="dot" id="b-max" title="Maximize"></button>
+      <button class="dot" id="b-close" title="Close"></button>
+    </div>
+  </div>
+  <div id="winbody"><div id="term"></div><span id="probe">MMMMMMMMMM</span></div>
+</div>
+<div id="win2" class="win closed">
+  <div class="titlebar">
+    <span class="tl" data-icon="image"></span>
+    <span>plot2d.png — quiz</span>
+    <div class="dots">
+      <button class="dot" id="p-min" title="Minimize"></button>
+      <button class="dot" id="p-max" title="Maximize"></button>
+      <button class="dot" id="p-close" title="Close"></button>
+    </div>
+  </div>
+  <div id="pbody"><canvas id="plot"></canvas></div>
+</div>
+<textarea id="ta" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+
+<div id="bar">
+  <div class="tbtn task" id="launch" title="Konsole"><span class="ic" data-icon="terminal"></span><span class="ttl" id="ttl"></span></div>
+  <div class="tbtn task off" id="ptask" title="plot2d"><span class="ic" data-icon="image"></span><span class="ttl">plot2d.png</span></div>
+  <div id="tray">
+    <div class="ti" id="vol" data-icon="volume" title="Volume"></div>
+    <div class="ti" data-icon="brightness"></div>
+    <div class="ti" data-icon="wifi"></div>
+    <div class="ti" data-icon="chevron"></div>
+    <div id="clock"><div id="ct"></div><div id="cd"></div></div>
+  </div>
+</div>
+
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<script src="questions.js"></script>
+<script src="quiz.js"></script>
+<script src="plot.js"></script>
+</body>
+</html>
