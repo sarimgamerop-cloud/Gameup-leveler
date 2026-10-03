@@ -1,4 +1,3 @@
-/* Second window: 2D plot viewer (non-resizable, 3 working buttons, taskbar entry) */
 const pwin = $('#win2'), ptask = $('#ptask'), pbody = $('#pbody'), cv = $('#plot');
 let plotData = null;
 const pOpen = () => !pwin.classList.contains('closed');
@@ -15,7 +14,7 @@ ptask.onclick = () => {
   if (pwin.classList.contains('hidden')) { pwin.classList.remove('hidden'); front(pwin); } else pwin.classList.add('hidden');
 };
 new ResizeObserver(() => drawPlot()).observe(pbody);
-
+ 
 function drawPlot() {
   if (!plotData || !pbody.clientWidth) return;
   const dpr = devicePixelRatio || 1, W = pbody.clientWidth, H = pbody.clientHeight;
