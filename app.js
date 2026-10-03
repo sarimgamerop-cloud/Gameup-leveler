@@ -1,8 +1,10 @@
-const USER = 'player_', HOST = 'archSystem';
-const CELL_W = 96, CELL_H = 104, PAD = 16, TB = 38;
+/* ---------- config ---------- */
+const USER = 'player_', HOST = 'archSystem';           // change prompt here
+const CELL_W = 96, CELL_H = 104, PAD = 16, TB = 38;     // grid + taskbar height
 const $ = s => document.querySelector(s);
 loadIcons();
 
+/* ---------- wallpaper (space) ---------- */
 (() => {
   let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
   let stars = '';
@@ -24,6 +26,7 @@ loadIcons();
     <path d="M0 560 L300 548 L800 560 L1200 575 L1600 590 L1600 640 L0 620Z" fill="#7a74c4" opacity=".35"/>`;
 })();
 
+/* ---------- desktop icons (grid snap) ---------- */
 const desk = $('#desktop');
 const grid = () => ({
   cols: Math.max(1, Math.floor((innerWidth - PAD) / CELL_W)),
@@ -68,6 +71,7 @@ makeIcon('quiz', 'quiz', 1, 1, () => launchQuiz());
 addEventListener('resize', () => document.querySelectorAll('.dicon').forEach(i => place(i, +i.dataset.c, +i.dataset.r)));
 $('#wall').addEventListener('pointerdown', () => document.querySelectorAll('.dicon').forEach(i => i.classList.remove('sel')));
 
+/* ---------- taskbar ---------- */
 const tick = () => {
   const d = new Date();
   $('#ct').textContent = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -77,6 +81,7 @@ tick(); setInterval(tick, 1000);
 let muted = false;
 $('#vol').onclick = () => { muted = !muted; $('#vol').innerHTML = ICONS[muted ? 'mute' : 'volume']; };
 
+/* ---------- window controls ---------- */
 const win = $('#win'), launch = $('#launch'), ta = $('#ta');
 const DEFAULT_TITLE = '~:bash — Konsole';
 const isOpen = () => !win.classList.contains('closed');
@@ -91,12 +96,13 @@ launch.onclick = () => {
 };
 $('#b-min').onclick = () => win.classList.add('hidden');
 $('#b-max').onclick = () => { win.classList.toggle('max'); focusTerm(); };
-$('#b-close').onclick = () => { win.classList.add('closed'); resetTerm(); sync(); };
+$('#b-close').onclick = () => { win.classList.add('closed'); resetTerm(); sync(); };  // history is kept
 function launchQuiz() {
   if (!isOpen()) openWin(); else { win.classList.remove('hidden'); focusTerm(); }
-  const cmd = cwd === 'Desktop' ? './quiz' : './Desktop/quiz';
+  const cmd = cwd === 'Desktop' ? './quiz' : './Desktop/quiz';   // same command a user would type
   print(prompt() + cmd); run(cmd); draw();
 }
+// resize from edges/corners
 const MINW = 380, MINH = 200;
 document.querySelectorAll('.rz').forEach(h => h.addEventListener('pointerdown', e => {
   if (win.classList.contains('max')) return;
@@ -114,6 +120,7 @@ document.querySelectorAll('.rz').forEach(h => h.addEventListener('pointerdown', 
   const up = () => { h.removeEventListener('pointermove', mv); h.removeEventListener('pointerup', up); };
   h.addEventListener('pointermove', mv); h.addEventListener('pointerup', up);
 }));
+// windows: bring to front, drag by title bar, double-click title maximizes
 let zTop = 20;
 const front = w => { w.style.zIndex = ++zTop; };
 document.querySelectorAll('.win').forEach(w => w.addEventListener('pointerdown', () => front(w), true));
@@ -130,13 +137,14 @@ document.querySelectorAll('.titlebar').forEach(t => {
   t.addEventListener('dblclick', e => { if (!e.target.closest('.dot')) t.querySelector('.dots').children[1].click(); });
 });
 
+/* ---------- terminal ---------- */
 const term = $('#term');
 const HK = 'term-history';
 let cwd = '~', hist = [], hi = 0, draft = '';
 try { hist = JSON.parse(localStorage.getItem(HK)) || []; } catch (e) { hist = []; }
 hi = hist.length;
 const saveHist = () => { try { localStorage.setItem(HK, JSON.stringify(hist.slice(-500))); } catch (e) {} };
-function resetTerm() {
+function resetTerm() {                       // wipes screen + state, keeps saved history
   [...term.children].forEach(n => n !== line && n.remove());
   abortQuiz(true); promptOverride = null; line.style.display = ''; reflows.length = 0;
   cwd = '~'; ta.value = ''; hi = hist.length; draft = ''; setTitle(); draw();
@@ -145,6 +153,7 @@ let promptOverride = null;
 const prompt = () => promptOverride ?? `[${USER}@${HOST} ${cwd}]$ `;
 const ls = () => cwd === '~' ? ['Desktop'] : cwd === 'Desktop' ? ['quiz'] : [];
 
+// active input line: prompt + before + block cursor + after (all inline, same baseline)
 const line = document.createElement('div');
 line.innerHTML = '<span id="p"></span><span id="b"></span><span class="cur" id="c"> </span><span id="a"></span>';
 term.appendChild(line);
@@ -159,6 +168,7 @@ function print(text, cls) {
   const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls;
   term.insertBefore(d, line);
 }
+/* ---- ANSI rendering, responsive reflow, quiz I/O ---- */
 const PAL = ['#2b2d42', '#ff5c7a', '#7ee787', '#f0d56b', '#6fa8ff', '#d58cff', '#5fe3e3', '#d8dae5'];
 const BRI = ['#6b708a', '#ff8fa3', '#a6f5ae', '#ffe69a', '#9cc4ff', '#e6b3ff', '#9af0f0', '#ffffff'];
 function ansi(s) {
@@ -190,7 +200,7 @@ function printA(s, cls) {
 }
 const cols = () => Math.max(10, Math.floor((term.clientWidth - 12) / ($('#probe').getBoundingClientRect().width / 10)));
 const reflows = [];
-function reflow(fn, cls) {
+function reflow(fn, cls) {                    // output that re-renders itself for the current width
   const d = printA('', cls), r = { d, fn, update() { d.replaceChildren(ansi(fn(cols()))); } };
   reflows.push(r); r.update(); return r;
 }
@@ -214,7 +224,7 @@ function abortQuiz(silent) {
 function run(cmd) {
   const [c, ...args] = cmd.trim().split(/\s+/); const a = args[0];
   if (!c) return;
-  if (/^(\.\/|~\/|\/)/.test(c)) {
+  if (/^(\.\/|~\/|\/)/.test(c)) {                       // path execution: ./Desktop/quiz, ./quiz (in Desktop), ~/Desktop/quiz, absolute
     const home = '/home/' + USER + '/';
     const abs = c.startsWith('~/') ? home + c.slice(2) : c.startsWith('/') ? c : home + (cwd === 'Desktop' ? 'Desktop/' : '') + c.slice(2);
     if (abs === home + 'Desktop/quiz') runQuiz();
@@ -232,7 +242,7 @@ function run(cmd) {
       else if ((a === 'Desktop' || a === 'Desktop/') && cwd === '~') cwd = 'Desktop';
       else print(`bash: cd: ${a}: No such file or directory`);
       break;
-    case 'cat':
+    case 'cat':                                          // placeholder cat
       if (!a) break;
       if (a === 'quiz' && cwd === 'Desktop') print('ELF\u0001\u0001\u0001  [binary placeholder - cat output]');
       else print(`cat: ${a}: No such file or directory`);
@@ -246,7 +256,7 @@ $('#winbody').addEventListener('mousedown', () => setTimeout(() => { if (!getSel
 document.addEventListener('selectionchange', () => document.activeElement === ta && draw());
 
 ta.addEventListener('keydown', e => {
-  if (cur) {
+  if (cur) {                                               // quiz is running
     const ctrl = e.ctrlKey && e.key.toLowerCase();
     if (ctrl === 'c') { e.preventDefault(); abortQuiz(); return; }
     if (['ArrowUp', 'ArrowDown', 'Tab'].includes(e.key) || ctrl === 'l' || !pending) { e.preventDefault(); return; }
@@ -281,6 +291,7 @@ ta.addEventListener('keydown', e => {
     e.preventDefault(); print(prompt() + ta.value + '^C'); ta.value = ''; draw();
   }
 });
+// paste: plain text only, single line; files/images are ignored
 ta.addEventListener('paste', e => {
   e.preventDefault();
   const t = e.clipboardData.getData('text/plain');
