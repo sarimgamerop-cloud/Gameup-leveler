@@ -18,7 +18,8 @@ Ever taken a gaming personality quiz only to get hit with a boring generic title
 ## Important Notices <!-- omit in toc -->
 
 > [!IMPORTANT]
-> The assessment runs directly in modern web browsers (HTML5 canvas, SVG graphics, CSS3, modern JavaScript ES6+). No heavy server setup or Node.js environment is required to try it out.
+> This is a hackathon project created for [Manware](https://www.youtube.com/@IAmManware) as part of a specific challenge topic.
+See the Proofs Page for more information and supporting evidence.
 
 > [!NOTE]
 > If you edit question mappings or archetype structures in `backend_procedures.py`, make sure to run `python test_converter.py` to compile the updated data into `questions.js`.
