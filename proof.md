@@ -41,6 +41,9 @@ A complete session recording capturing the interface construction, custom SVG wa
 * 🔗 **Google Drive Link**: [Frontend Timelapse (Watch on Google Drive)](https://drive.google.com/file/d/1azWzhnCxOg0SAMtjGqrQIOBAwiNE3biq/view)
 * **Summary**: Covers layout structuring, icon grid snapping logic, Konsole terminal styling with Sweet/Candy color themes, ANSI sequence parsing, and responsive canvas projection.
 
+* You can also see some of the detection results, if you find some else, it may be from minor ai assistance:
+![Banner](assets/code_result.PNG)
+
 ---
 
 ## Development Stage Recordings
