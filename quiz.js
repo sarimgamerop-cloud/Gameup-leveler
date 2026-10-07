@@ -1,30 +1,31 @@
-/* The quiz program. Runs inside the terminal using helpers from app.js. */
+// quiz interface file made by arctrus
 const ABORT = Symbol('abort');
 const K = (c, t) => `\x1b[${c}m${t}\x1b[0m`;
 const lerp = (a, b, t) => Math.round(a + (b - a) * t);
-const GLYPH = {
+const glyph = {
   Q: [' ██████╗ ', '██╔═══██╗', '██║   ██║', '██║▄▄ ██║', '╚██████╔╝', ' ╚══▀▀═╝ '],
   U: ['██╗   ██╗', '██║   ██║', '██║   ██║', '██║   ██║', '╚██████╔╝', ' ╚═════╝ '],
   I: ['██╗', '██║', '██║', '██║', '██║', '╚═╝'],
   Z: ['███████╗', '╚══███╔╝', '  ███╔╝ ', ' ███╔╝  ', '███████╗', '╚══════╝']
 };
-// responsive: picks art by terminal width, re-rendered on every resize
+// map art for the terminal:
 const banner = cols => cols < 31 ? '\x1b[1;95m▌\x1b[96m QUIZ \x1b[95m▐\x1b[0m'
   : [0, 1, 2, 3, 4, 5].map(i => {
-      const t = i / 5, row = [...'QUIZ'].map(c => GLYPH[c][i]).join('');
+      const t = i / 5, row = [...'QUIZ'].map(c => glyph[c][i]).join('');
       return `\x1b[38;2;${lerp(255, 34, t)};${lerp(107, 211, t)};${lerp(157, 238, t)}m${row}\x1b[0m`;
     }).join('\n');
 const TAG = { ok: K(92, ' OK '), info: K(96, 'INFO'), warn: K(93, 'WARN'), run: K(95, 'EXEC') };
 const tag = t => `${K(90, '[')}${TAG[t]}${K(90, ']')}`;
 const hex = n => [...Array(n)].map(() => (Math.random() * 16 | 0).toString(16)).join('');
 
+// the runQuiz() function that runs the terminal quiz by arctrus :p
 async function runQuiz() {
   if (cur) return;
   const run = cur = { aborted: false, silent: false };
   const sleep = ms => new Promise((res, rej) => setTimeout(() => run.aborted ? rej(ABORT) : res(), ms));
   const log = async (t, m, ms = 140) => { printA(`${tag(t)} ${m}`); await sleep(ms); };
   const hdr = t => { printA(''); printA(`${K('1;95', '::')} ${K(1, t)}`); };
-  // label on one line, bar on the line below: ━━━━━━╸╌╌╌╌  62%  13.5/21.8 MiB
+  // labels (progress bars.)
   const grad = t => `\x1b[38;2;${lerp(255, 34, t)};${lerp(107, 211, t)};${lerp(157, 238, t)}m`;
   const barStr = (p, w) => {
     const f = Math.floor(w * p); let s = '';
@@ -32,6 +33,7 @@ async function runQuiz() {
     if (f < w) s += K('1;97', '╸') + K(90, '╌'.repeat(w - f - 1));
     return s + '\x1b[0m';
   };
+  
   async function progress(label, ms, total) {
     let p = 0;
     printA(`${K('1;95', '›')} ${label}`);
@@ -43,34 +45,35 @@ async function runQuiz() {
     });
     for (let i = 1; i <= 24; i++) { await sleep(ms / 24); p = i / 24; r.update(); }
   }
-  setTitle('quiz'); line.style.display = 'none';
+  setTitle('Quiz'); line.style.display = 'none';
   const answers = [], n = QUESTIONS.length;
   try {
     printA('');
     reflow(banner, 'art');
     printA('');
     reflow(c => K(90, '─'.repeat(Math.min(c, 60))));
-    printA(`${K('1;96', 'quiz')} ${K(90, 'v2.4.1-rc3  build 20261002  arch x86_64  pid ' + (1000 + Math.random() * 8999 | 0))}`);
+    printA(`${K('1;96', 'quiz')} ${K(90, 'v2.4.1-rc3  build 20261002  archx86_64  pid ' + (1000 + Math.random() * 8999 | 0))}`);
     reflow(c => K(90, '─'.repeat(Math.min(c, 60))));
     await sleep(250);
-    await log('ok', 'kernel entropy pool seeded');
-    await log('ok', `question bank loaded (${n} entries)`);
+    await log('ok', 'succesfully booted the kernel!');
+    await log('ok', `detected (${n} question entries)`);
     await log('ok', `integrity ${K(90, 'sha256:' + hex(16))}`);
     await log('info', 'tty utf-8 / truecolor detected');
-    await log('warn', 'telemetry disabled (offline mode)', 300);
+    await log('warn', 'telemetry disabled', 300);
     printA('');
-    printA(`Answer with ${K('1;96', 'A')} ${K('1;96', 'B')} ${K('1;96', 'C')} or ${K('1;96', 'D')} and press Enter. ${K(90, 'Ctrl+C aborts.')}`);
+    printA(`Answer with ${K('1;96', 'A')} ${K('1;96', 'B')} ${K('1;96', 'C')} ${K('1;96', 'D')} ${K('1;96', 'E')} or ${K('1;96', 'F')} and press Enter. ${K(90, 'Ctrl+C aborts.')}`);
     await sleep(500);
 
     for (let i = 0; i < n; i++) {
       const q = QUESTIONS[i];
       printA('');
       printA(`${K('1;95', `[${i + 1}/${n}]`)} ${K(1, q.q)}`);
-      printA(q.options.map((o, k) => `${K(96, `[${'ABCD'[k]}]`)} ${o}`).join('    '));
+      printA(q.options.map((o, k) => `${K(96, `[${'ABCDEF'[k]}]`)} ${o}`).join('    '));
       for (;;) {
         const a = (await readLine('answer> ')).trim().toUpperCase();
-        if (/^[A-D]$/.test(a)) { answers.push(a); break; }
-        printA(K(91, 'invalid input: enter A, B, C or D'));
+        // the frontend was designed for 4 inputs, but i had 6 roles so changing some code.
+        if (/^[A-F]$/.test(a)) { answers.push(a); break; }
+        printA(K(91, 'Invalid input: enter A, B, C, D, E or F'));
       }
     }
     line.style.display = 'none';
@@ -90,7 +93,7 @@ async function runQuiz() {
     hdr('[3/4] analysing responses');
     const cnt = k => answers.filter(a => a === k).length;
     await log('info', `encoding ${n} answers as a ${n}x4 one-hot matrix`, 300);
-    await log('ok', `category counts  ${[...'ABCD'].map(k => K(96, k) + ':' + cnt(k)).join('  ')}`, 300);
+    await log('ok', `category counts  ${[...'ABCDEF'].map(k => K(96, k) + ':' + cnt(k)).join('  ')}`, 300);
     await progress('standardizing features', 700);
     await progress('computing covariance matrix', 900);
 

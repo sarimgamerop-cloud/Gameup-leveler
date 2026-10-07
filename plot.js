@@ -1,5 +1,6 @@
-/* Result window: where the user lands on the 2D plane (drag = pan, wheel = zoom, double-click = reset).
-   Needs locate() / ARCH from questions.js. Only this file controls the window + drawing. */
+/* Result window: where the user lands on the 2D plane
+   Needs locate() / ARCH from questions.js. Only this file controls the window and the drawing. */
+   
 const pwin = $('#win2'), ptask = $('#ptask'), pbody = $('#pbody'), cv = $('#plot');
 let plotData = null, view = { cx: 0, cy: 0, s: 1 };
 const COLORS = ['#ff6b9d', '#7ee787', '#f0d56b', '#6fa8ff', '#d58cff', '#5fe3e3'];   // per ARCH index
@@ -66,7 +67,7 @@ function drawPlot() {
   c.fillStyle = '#0d0f22'; c.fillRect(0, 0, g.W, g.H);
   c.font = '11px "JetBrainsMono Nerd Font","JetBrains Mono",monospace';
 
-  // header: result + nearest categories
+  // header: result and nearest categories
   const top = res.near[0], idx = n => COLORS[ARCH.findIndex(a => a.n === n)];
   c.textAlign = 'left'; c.fillStyle = '#d8dae5'; c.font = '14px "JetBrainsMono Nerd Font","JetBrains Mono",monospace';
   c.fillText('you land closest to ', M.l, 24);
@@ -76,7 +77,7 @@ function drawPlot() {
   c.fillStyle = '#9aa0bd'; c.fillText('nearest: ' + res.near.slice(0, 3).map(a => `${a.n} ${a.pct}%`).join('   '), M.l, 43);
   c.fillStyle = '#4a4f6a'; c.fillText('x: inward - outward   y: planned - spontaneous   |   drag to pan, scroll to zoom, double-click to reset', M.l, 58);
 
-  // plane (clipped to plot area)
+  // plane (which is clipped to plot area)
   c.save(); c.beginPath(); c.rect(M.l, M.t, g.pw, g.ph); c.clip();
   const x0 = view.cx - (g.pw / 2) / g.unit, x1 = view.cx + (g.pw / 2) / g.unit;
   const y0 = view.cy - (g.ph / 2) / g.unit, y1 = view.cy + (g.ph / 2) / g.unit;
